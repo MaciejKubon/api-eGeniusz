@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
@@ -13,7 +14,7 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(),[
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', Password::min(8)->letters()->numbers()->symbols()],
             'accountType'=> 'required|in:admin,teacher,student'
@@ -31,17 +32,27 @@ class AuthController extends Controller
             'accountType.required' => 'Please enter your account type.',
             'accountType.in' => 'Please enter a valid account type.'
         ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'error',
+                'error'  => $validator->errors(),
+            ], 400);
+        }
         try {
             User::create([
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'accountType' => $request->accountType,
             ]);
-            return response()->json(['message' => 'sucess'], 201);
+            return response()->json([
+                'message' => 'sucess',
+                ], 201);
         }
         catch (\Exception $e) {
-            return response()->json(['message' => 'error',
-                'error' => $e->getMessage()], 500);
+            return response()->json(['
+                message' => 'error',
+                'error' => $e->getMessage()
+            ], 500);
         }
 
     }
