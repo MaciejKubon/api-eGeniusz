@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\api;
+namespace App\Http\Controllers\api\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
@@ -17,7 +18,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(),[
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', Password::min(8)->letters()->numbers()->symbols()],
-            'accountType'=> 'required|in:admin,teacher,student'
+            'role'=> 'required|in:admin,teacher,student'
         ], [
             'email.required' => 'Please enter your email address.',
             'email.email' => 'Please enter a valid email address.',
@@ -29,8 +30,8 @@ class AuthController extends Controller
             'password.mixed' => 'Hasło musi zawierać małe i duże litery.',
             'password.numbers' => 'Hasło musi zawierać przynajmniej jedną cyfrę.',
             'password.symbols' => 'Hasło musi zawierać przynajmniej jeden znak specjalny.',
-            'accountType.required' => 'Please enter your account type.',
-            'accountType.in' => 'Please enter a valid account type.'
+            'role.required' => 'Please enter your account type.',
+            'role.in' => 'Please enter a valid account type.'
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -42,7 +43,7 @@ class AuthController extends Controller
             User::create([
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'accountType' => $request->accountType,
+                'role' => $request->role,
             ]);
             return response()->json([
                 'message' => 'sucess',
@@ -54,11 +55,39 @@ class AuthController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
-
     }
-
-
-
-
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ], [
+            'email.required' => 'Please enter your email address.',
+            'email.email' => 'Please enter a valid email address.',
+            'password.required' => 'Pole hasło jest wymagane.',
+        ]);
+        try{
+            if (Auth::attempt($credentials)) {
+                $user = Auth::user();
+                $token = $user->createToken('authToken')->plainTextToken;
+                return response()->json([
+                    'message' => 'sucess',
+                    'role' => $user->role,
+                    'token' => $token],200);
+            }
+            return response()->json([
+                'message' => 'error',
+                'error' => 'Nieprawidłowe dane logowania'], 401);
+        }catch (\Exception $e){
+            return response()->json([
+                'message' => 'error',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+    public function logout(Request $request) {
+        $request->user()->tokens()->delete();
+        return response()->json(['message' => 'Wylogowano pomyślnie'],200);
+    }
 
 }

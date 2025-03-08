@@ -18,7 +18,7 @@ return new class extends Migration
             $table->date('birthday')->nullable();
             $table->string('description', 1000)->nullable();
             $table->string('avatar')->nullable();
-            $table->integer('role')->nullable();
+            $table->string('role')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
