@@ -5,6 +5,7 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
 
 class subject extends Model
@@ -24,7 +25,11 @@ class subject extends Model
         'name',
     ];
     protected $hidden = [
-        'password',
-        'remember_token',
+        'created_at',
+        'updated_at',
     ];
+    public function lesson(): hasMany
+    {
+        return $this->hasMany(lesson::class);
+    }
 }

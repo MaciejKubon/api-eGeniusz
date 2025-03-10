@@ -3,6 +3,7 @@
 use App\Http\Controllers\api\Auth\AuthController;
 use App\Http\Controllers\api\Subject\subjectController;
 use App\Http\Controllers\api\Subject\subjectLevelController;
+use App\Http\Controllers\api\lessonController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -25,3 +26,12 @@ Route::middleware('auth:sanctum')->get('/subject/{subject}', [subjectController:
 Route::middleware('auth:sanctum')->get('/subject', [subjectController::class, 'index']);
 Route::middleware('auth:sanctum')->put('/subject/{subject}', [subjectController::class, 'update']);
 Route::middleware('auth:sanctum')->delete('/subject/{subject}', [subjectController::class, 'destroy']);
+
+
+//lesson
+Route::middleware('auth:sanctum')->post('/lesson', [lessonController::class, 'store']);
+Route::middleware('auth:sanctum')->get('/lesson', [lessonController::class, 'index']);
+Route::middleware('auth:sanctum')->get('/lesson/{lesson}', [lessonController::class, 'show']);
+Route::middleware('auth:sanctum')->get('/teacherLesson/{user}', [lessonController::class, 'showTeacherLessons']);
+Route::middleware('auth:sanctum')->put('/lesson/{lesson}', [lessonController::class, 'update']);
+Route::middleware('auth:sanctum')->delete('/lesson/{lesson}', [lessonController::class, 'destroy']);
