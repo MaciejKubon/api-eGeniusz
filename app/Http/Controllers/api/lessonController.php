@@ -26,7 +26,7 @@ class lessonController extends Controller
         try{
             return response()->json([
                 'message' => 'sucess',
-                'subjectLevel' => $lessonArray,
+                'lesson' => $lessonArray,
             ], 200);
         }
         catch(\Exception $e){
@@ -39,12 +39,7 @@ class lessonController extends Controller
     public function showTeacherLessons(User $user){
         if (!auth()->user()->can('show_all_teacher_lesson'))
             abort(403);
-        if($user->role != 'teacher'){
-            return response()->json([
-                'message' => 'error',
-                'error'  => "Invalid account type"
-            ], 400);
-        }
+
         $lessons = $user->lesson;
         $lessonArray = array();
         foreach($lessons as $lesson){

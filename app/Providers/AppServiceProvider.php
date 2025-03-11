@@ -68,5 +68,26 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('delete_lesson', function(User $user) {
             return $user->role == "admin";
         });
+
+        //term
+        Gate::define('show_admin_term', function(User $user) {
+            return $user->role == "admin";
+        });
+        Gate::define('show_all_teacher_term', function(User $user) {
+            return $user->role == "admin" | $user->role == "teacher" | $user->role == "student";
+        });
+        Gate::define('create_term', function(User $user) {
+            return $user->role == "teacher";
+        });
+        Gate::define('edit_term', function(User $user) {
+            return $user->role == "teacher";
+        });
+
+        Gate::define('delete_term', function(User $user) {
+            return $user->role == "admin" | $user->role == "teacher";
+        });
+
+
+
     }
 }
