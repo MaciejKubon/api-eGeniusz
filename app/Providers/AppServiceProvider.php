@@ -88,6 +88,20 @@ class AppServiceProvider extends ServiceProvider
         });
 
 
+        //classes
+        Gate::define('show_admin_classes', function(User $user) {
+            return $user->role == "admin";
+        });
+        Gate::define('create_classes', function(User $user) {
+            return $user->role == "student";
+        });
+        Gate::define('update_classes', function(User $user) {
+            return $user->role == "student";
+        });
+        Gate::define('delete_classes', function(User $user) {
+            return $user->role == "admin" | $user->role == "teacher" | $user->role == "student";
+        });
+
 
     }
 }

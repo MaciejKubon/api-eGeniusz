@@ -5,6 +5,7 @@ use App\Http\Controllers\api\Subject\subjectController;
 use App\Http\Controllers\api\Subject\subjectLevelController;
 use App\Http\Controllers\api\lessonController;
 use App\Http\Controllers\api\termController;
+use App\Http\Controllers\api\classesController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -40,9 +41,21 @@ Route::middleware('auth:sanctum')->delete('/lesson/{lesson}', [lessonController:
 
 //term
 Route::middleware('auth:sanctum')->get('/term', [termController::class, 'index']);
-Route::middleware('auth:sanctum')->get('/teacherTerm/{user}', [termController::class, 'showTeacherTerms']);
 Route::middleware('auth:sanctum')->get('/term/{term}', [termController::class, 'show']);
 Route::middleware('auth:sanctum')->post('/term', [termController::class, 'store']);
 Route::middleware('auth:sanctum')->put('/term', [termController::class, 'update']);
 Route::middleware('auth:sanctum')->delete('/term/{term}', [termController::class, 'destroy']);
+//termTeacher
+Route::middleware('auth:sanctum')->get('/teacherTerm/{user}', [termController::class, 'showTeacherTerms']);
+Route::middleware('auth:sanctum')->post('/teacherTerm', [termController::class, 'showDayTeacherTerms']);
 
+
+//classes
+Route::middleware('auth:sanctum')->get('/classes', [classesController::class, 'index']);
+Route::middleware('auth:sanctum')->get('/classes/{classes}', [classesController::class, 'show']);
+Route::middleware('auth:sanctum')->post('/classes', [classesController::class, 'store']);
+Route::middleware('auth:sanctum')->put('/classes/{classes}', [classesController::class, 'update']);
+Route::middleware('auth:sanctum')->delete('/classes/{classes}', [classesController::class, 'destroy']);
+//classesTeacher
+Route::middleware('auth:sanctum')->get('/teacherClasses/{user}', [classesController::class, 'showTeacherClasses']);
+Route::middleware('auth:sanctum')->post('/studentClasses', [classesController::class, 'showDayStudentClasses']);

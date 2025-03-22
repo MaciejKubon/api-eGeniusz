@@ -21,35 +21,36 @@ class termController extends Controller
         $terms = term::all();
         $termArray = array();
         foreach ($terms as $term) {
-            $termArray[] = $this -> termDetails($term);
+            $termArray[] = $this->termDetails($term);
         }
-        try{
+        try {
             return response()->json([
                 'message' => 'sucess',
                 'term' => $termArray,
             ], 200);
-        }
-        catch(\Exception $e){
+        } catch (\Exception $e) {
             return response()->json(['
                 message' => 'error',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
-    public function showTeacherTerms(User $user){
+
+    public function showTeacherTerms(User $user)
+    {
         if (!auth()->user()->can('show_all_teacher_term'))
             abort(403);
-        $terms = $user ->terms;
+        $terms = $user->terms;
         $termArray = array();
         foreach ($terms as $term) {
-            $termArray[] = $this -> termDetails($term);
+            $termArray[] = $this->termDetails($term);
         }
-        try{
+        try {
             return response()->json([
                 'message' => 'sucess',
                 'term' => $termArray
-            ]);}
-        catch(\Exception $e){
+            ]);
+        } catch (\Exception $e) {
             return response()->json(['
                 message' => 'error',
                 'error' => $e->getMessage()
@@ -67,7 +68,7 @@ class termController extends Controller
         $validator = Validator::make($request->all(), [
             'start_date' => 'required|date_format:Y-m-d H:i:s',
             'end_date' => 'required|date_format:Y-m-d H:i:s||after:start_date',
-        ],[
+        ], [
             'start_date.required' => 'Start date is required',
             'start_date.date_format' => 'Invalid date format',
             'end_date.required' => 'End date is required',
@@ -77,18 +78,18 @@ class termController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'error',
-                'error'  => $validator->errors(),
+                'error' => $validator->errors(),
             ], 400);
         }
         $teacher = $request->user();
-        $termList = $teacher -> terms;
+        $termList = $teacher->terms;
         $start_date = $request['start_date'];
         $end_date = $request['end_date'];
         foreach ($termList as $term) {
-            if((($term['start_date']>=$start_date) && ($term['end_date']<=$end_date))||
-                (($term['start_date']<=$start_date) && ($term['end_date']>=$end_date))||
-                (($term['start_date']>=$start_date) && ($term['end_date']<=$end_date))||
-                (($term['start_date']<=$start_date) && ($term['end_date']>=$end_date))){
+            if ((($term['start_date'] >= $start_date) && ($term['end_date'] <= $end_date)) ||
+                (($term['start_date'] <= $start_date) && ($term['end_date'] >= $end_date)) ||
+                (($term['start_date'] >= $start_date) && ($term['end_date'] <= $end_date)) ||
+                (($term['start_date'] <= $start_date) && ($term['end_date'] >= $end_date))) {
                 return response()->json([
                     'message' => 'error',
                     'error' => "Data koliduje z innym terminem"
@@ -97,14 +98,14 @@ class termController extends Controller
         }
         try {
             term::create([
-                'teacher_id' => $teacher -> id,
+                'teacher_id' => $teacher->id,
                 'start_date' => $start_date,
                 'end_date' => $end_date
             ]);
             return response()->json([
                 'message' => 'sucess',
             ], 201);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             return response()->json(['
                 message' => 'error',
                 'error' => $e->getMessage()
@@ -122,7 +123,7 @@ class termController extends Controller
                 'message' => 'sucess',
                 'term' => $this->termDetails($term)
             ], 200);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 'message' => 'error',
                 'error' => $e->getMessage()
@@ -137,12 +138,12 @@ class termController extends Controller
     {
         if (!auth()->user()->can('edit_term'))
             abort(403);
-        if($request->user()->id != $term->teacher_id)
+        if ($request->user()->id != $term->teacher_id)
             abort(403);
         $validator = Validator::make($request->all(), [
             'start_date' => 'required|date_format:Y-m-d H:i:s',
             'end_date' => 'required|date_format:Y-m-d H:i:s||after:start_date',
-        ],[
+        ], [
             'start_date.required' => 'Start date is required',
             'start_date.date_format' => 'Invalid date format',
             'end_date.required' => 'End date is required',
@@ -152,7 +153,7 @@ class termController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'error',
-                'error'  => $validator->errors(),
+                'error' => $validator->errors(),
             ], 400);
         }
         try {
@@ -160,8 +161,7 @@ class termController extends Controller
             return response()->json([
                 'message' => 'sucess',
             ], 200);
-        }
-        catch(\Exception $e){
+        } catch (\Exception $e) {
             return response()->json(['
                 message' => 'error',
                 'error' => $e->getMessage()
@@ -177,16 +177,62 @@ class termController extends Controller
         if (!auth()->user()->can('delete_term'))
             abort(403);
         $teacher = user::find(auth()->user());
-        if($teacher->role == "teacher" && $term->teacher_id != $teacher->id){
+        if ($teacher->role == "teacher" && $term->teacher_id != $teacher->id) {
             abort(403);
         }
-        try{
+        try {
             $term->delete();
             return response()->json([
                 'message' => 'sucess',
             ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['
+                message' => 'error',
+                'error' => $e->getMessage()
+            ], 500);
         }
-        catch(\Exception $e){
+    }
+
+    public function showDayTeacherTerms(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'date' => 'required|date_format:Y-m-d',
+            'teacher_id' => 'required|integer|exists:users,id'
+        ], [
+            'date.required' => 'Start date is required',
+            'date.date_format' => 'Invalid date format',
+            'teacher_id.required' => 'Teacher id is required',
+            'teacher_id.integer' => 'Teacher id is invalid',
+            'teacher_id.exists' => 'Teacher id is invalid'
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'error',
+                'error' => $validator->errors(),
+            ], 400);
+        }
+        $teacher = user::find($request->get('teacher_id'));
+        if ($teacher->role != "teacher") {
+            return response()->json([
+                'message' => 'error',
+                'error' => 'Niepoprawny użytkownk'
+            ], 400);
+        }
+
+        $teacherTerms = term::where('teacher_id', $request->get('teacher_id'))
+            ->whereBetween('start_date', [$request->get('date') . ' 00:00:00', $request->get('date') . ' 23:59:59'])
+            ->get();
+        $termArray = array();
+        foreach ($teacherTerms as $term) {
+            $termArray[] = $this->termDetails($term);
+        }
+        try {
+            return response()->json([
+                'message' => 'sucess',
+                'terms' => $termArray,
+            ], 200);
+        } catch (\Exception $e) {
             return response()->json(['
                 message' => 'error',
                 'error' => $e->getMessage()
@@ -195,19 +241,21 @@ class termController extends Controller
     }
 
 
-    private function termDetails(term $term){
+    private function termDetails(term $term)
+    {
         $teacher = ['id' => $term->user->id,
-            'firstName'=> $term->user->firstName,
-            'lastName'=>$term->user->lastName];
+            'firstName' => $term->user->firstName,
+            'lastName' => $term->user->lastName];
         try {
             $terms = [
                 'id' => $term['id'],
                 'start_date' => $term['start_date'],
                 'end_date' => $term['end_date'],
                 'teacher' => $teacher,
+                'class' => $term->classes
             ];
             return $terms;
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             return response()->json([
                 'message' => 'error',
                 'error' => $e->getMessage()
@@ -215,3 +263,12 @@ class termController extends Controller
         }
     }
 }
+//$studentClasses = Classes::join('terms', 'terms.id', '=', 'classes.terms_id')
+//->where('classes.student_id', $request->get('student_id'))
+//->whereBetween('terms.start_date', [
+//$request->get('date') . ' 00:00:00',
+//$request->get('date') . ' 23:59:59'
+//])
+//->select('classes.*') // Wybieramy tylko kolumny z `classes`
+//->get();
+//}
