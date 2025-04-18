@@ -263,12 +263,4 @@ class termController extends Controller
         }
     }
 }
-//$studentClasses = Classes::join('terms', 'terms.id', '=', 'classes.terms_id')
-//->where('classes.student_id', $request->get('student_id'))
-//->whereBetween('terms.start_date', [
-//$request->get('date') . ' 00:00:00',
-//$request->get('date') . ' 23:59:59'
-//])
-//->select('classes.*') // Wybieramy tylko kolumny z `classes`
-//->get();
-//}
+

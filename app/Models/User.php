@@ -35,6 +35,10 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'created_at',
+        'updated_at',
+        'email_verified_at',
+        'email'
     ];
 
     /**
@@ -51,7 +55,7 @@ class User extends Authenticatable
     }
     public function lesson(): hasMany
     {
-        return $this->hasMany(lesson::class, 'teacher_id');
+        return$this->hasMany(lesson::class, 'teacher_id');
     }
     public function terms(): hasMany
     {

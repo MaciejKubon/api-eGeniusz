@@ -102,6 +102,11 @@ class AppServiceProvider extends ServiceProvider
             return $user->role == "admin" | $user->role == "teacher" | $user->role == "student";
         });
 
+        //userDetails
+        Gate::define('edit_user_details', function(User $user) {
+            return $user->role == "admin" | $user->role == "teacher" | $user->role == "student";
+        });
+
 
     }
 }
