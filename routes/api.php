@@ -6,6 +6,7 @@ use App\Http\Controllers\api\Subject\subjectLevelController;
 use App\Http\Controllers\api\lessonController;
 use App\Http\Controllers\api\termController;
 use App\Http\Controllers\api\classesController;
+use App\Http\Controllers\api\userDetailsController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -59,3 +60,7 @@ Route::middleware('auth:sanctum')->delete('/classes/{classes}', [classesControll
 //classesTeacher
 Route::middleware('auth:sanctum')->get('/teacherClasses/{user}', [classesController::class, 'showTeacherClasses']);
 Route::middleware('auth:sanctum')->post('/studentClasses', [classesController::class, 'showDayStudentClasses']);
+
+
+//userDetails
+Route::middleware('auth:sanctum')->get('/userDetails/{user}', [userDetailsController::class, 'show']);
