@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
+Route::middleware('auth:sanctum')->post('/auth', [AuthController::class, 'authenticate']);
 
 //subjectLevel
 Route::middleware('auth:sanctum')->post('/subjectLevel', [subjectLevelController::class, 'store']);
@@ -34,6 +35,7 @@ Route::middleware('auth:sanctum')->delete('/subject/{subject}', [subjectControll
 //lesson
 Route::middleware('auth:sanctum')->post('/lesson', [lessonController::class, 'store']);
 Route::middleware('auth:sanctum')->get('/lesson', [lessonController::class, 'index']);
+Route::middleware('auth:sanctum')->get('/teacherLesson', [lessonController::class, 'showLessons']);
 Route::middleware('auth:sanctum')->get('/lesson/{lesson}', [lessonController::class, 'show']);
 Route::middleware('auth:sanctum')->get('/teacherLesson/{user}', [lessonController::class, 'showTeacherLessons']);
 Route::middleware('auth:sanctum')->put('/lesson/{lesson}', [lessonController::class, 'update']);

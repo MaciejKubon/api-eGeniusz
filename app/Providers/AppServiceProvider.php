@@ -59,6 +59,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('show_admin_lesson', function(User $user) {
             return $user->role == "admin";
         });
+        Gate::define('show_teacher_lessons', function(User $user) {
+            return $user->role == "teacher";
+        });
         Gate::define('show_all_teacher_lesson', function(User $user) {
             return $user->role == "admin" | $user->role == "teacher" | $user->role == "student";
         });
@@ -66,7 +69,7 @@ class AppServiceProvider extends ServiceProvider
             return $user->role == "admin" | $user->role == "teacher";
         });
         Gate::define('delete_lesson', function(User $user) {
-            return $user->role == "admin";
+            return $user->role == "admin" | $user->role == "teacher";
         });
 
         //term
