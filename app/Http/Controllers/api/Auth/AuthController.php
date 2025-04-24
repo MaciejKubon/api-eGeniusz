@@ -18,6 +18,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(),[
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', Password::min(8)->letters()->numbers()->symbols()],
+            'rePassword' => 'required|same:password',
             'role'=> 'required|in:admin,teacher,student'
         ], [
             'email.required' => 'Please enter your email address.',
@@ -30,12 +31,13 @@ class AuthController extends Controller
             'password.mixed' => 'Hasło musi zawierać małe i duże litery.',
             'password.numbers' => 'Hasło musi zawierać przynajmniej jedną cyfrę.',
             'password.symbols' => 'Hasło musi zawierać przynajmniej jeden znak specjalny.',
+            'rePassword.same'=>'Hasła muszą być takie same',
             'role.required' => 'Please enter your account type.',
             'role.in' => 'Please enter a valid account type.'
         ]);
         if ($validator->fails()) {
             return response()->json([
-                'message' => 'error',
+                'message' => 'Nieprawodłowe dane rejestracji',
                 'error'  => $validator->errors(),
             ], 400);
         }
@@ -46,7 +48,7 @@ class AuthController extends Controller
                 'role' => $request->role,
             ]);
             return response()->json([
-                'message' => 'sucess',
+                'message' => 'Konto zostało utworzone',
                 ], 201);
         }
         catch (\Exception $e) {
@@ -71,7 +73,7 @@ class AuthController extends Controller
                 $user = Auth::user();
                 $token = $user->createToken('authToken')->plainTextToken;
                 return response()->json([
-                    'message' => 'sucess',
+                    'message' => 'Logowanie powiodło się',
                     'role' => $user->role,
                     'token' => $token],200);
             }
@@ -88,6 +90,37 @@ class AuthController extends Controller
     public function logout(Request $request) {
         $request->user()->tokens()->delete();
         return response()->json(['message' => 'Wylogowano pomyślnie'],200);
+    }
+
+    public function authenticate(Request $request){
+        $validator = Validator::make($request->all(), [
+            'role'=>'required|in:admin,teacher,student'
+        ],[
+            'role.required' => 'Please enter your account type.',
+            'role.in' => 'Please enter a valid account type.'
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Brak uprawnień',
+                'error'  => $validator->errors(),
+            ], 400);
+        }
+        $user = $request->user();
+        if (!$user) {
+            return response()->json([
+                'error' => 'Brak uprawnień',
+            ], 401); // 401 Unauthorized
+        }
+        if($user->role != $request['role']){
+            return response()->json([
+                'message' => 'Brak uprawnień',
+            ], 403);
+        }else{
+            return response()->json([
+                'message' => 'succes',
+            ], 200);
+        }
+
     }
 
 }

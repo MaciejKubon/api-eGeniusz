@@ -36,6 +36,27 @@ class lessonController extends Controller
             ], 500);
         }
     }
+    public function showLessons(Request $request){
+        if (!auth()->user()->can('show_teacher_lessons'))
+            abort(403);
+        $user = auth()->user();
+        $lessons = $user->lesson;
+        $lessonArray = array();
+        foreach($lessons as $lesson){
+            $lessonArray[] = $this->lesssonDetails($lesson);
+        }
+        try{
+            return response()->json([
+                'message' => 'sucess',
+                'lessons' => $lessonArray
+            ]);}
+        catch(\Exception $e){
+            return response()->json(['
+                message' => 'error',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
     public function showTeacherLessons(User $user){
         if (!auth()->user()->can('show_all_teacher_lesson'))
             abort(403);
@@ -80,7 +101,7 @@ class lessonController extends Controller
         ]);
         if ($validator->fails()) {
             return response()->json([
-                'message' => 'error',
+                'message' => 'Nie udało sie utworzenie przedmiotu',
                 'error'  => $validator->errors(),
             ], 400);
         }
@@ -90,7 +111,7 @@ class lessonController extends Controller
         $lessonList =$users->lesson;
         if($lessonList->where('subject_id',$request['subject_id'])->where('subject_level_id',$request['subject_level_id'])->count() > 0){
             return response()->json([
-                'message' => 'error',
+                'message' => 'Nie udało sie utworzenie przedmiotu',
                 'error'  => "Istnieje już lekacja z wybranego przedmiotu o wybranym poziomie"
             ], 400);
         }
@@ -102,7 +123,7 @@ class lessonController extends Controller
                 'price' => $request['price']
             ]);
             return response()->json([
-                'message' => 'sucess',
+                'message' => 'Przedmiot został dodany',
             ], 201);
         }
         catch(\Exception $e){
@@ -190,17 +211,26 @@ class lessonController extends Controller
     public function destroy(lesson $lesson)
     {
         $teacher = auth()->user();
-        if (!auth()->user()->can('delete_lesson') | $teacher !=$lesson->teacher_id )
+        if (!auth()->user()->can('delete_lesson') | $teacher->id !=$lesson->teacher_id )
             abort(403);
+        $class = $lesson->classes;
+
+        if(count($class)>0){
+            return response()->json([
+                'message' => 'Nie można usunąć przedmiotu przypisanego do zajęć' ,
+            ], 400);
+        }
+
+
         try{
             $lesson->delete();
             return response()->json([
-                'message' => 'sucess',
+                'message' => 'Usunięcie przedmiotu powiodło się',
             ], 200);
         }
         catch(\Exception $e){
-            return response()->json(['
-                message' => 'error',
+            return response()->json([
+                'message' => 'Nie udało się usunąć przdmiotu',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -222,6 +252,7 @@ class lessonController extends Controller
                 'subject' => $subject,
                 'subject_level' => $subject_level,
                 'teacher' => $teacher,
+                'price'=>$lesson->price,
             ];
             return $lesson;
         }catch(\Exception $e){
