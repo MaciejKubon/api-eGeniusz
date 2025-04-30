@@ -23,6 +23,6 @@ class term extends Model
     }
     public function classes(): hasOne
     {
-        return $this->hasOne(classes::class, "id")->select('id','confirmed');
+        return $this->hasOne(classes::class, "terms_id");
     }
 }

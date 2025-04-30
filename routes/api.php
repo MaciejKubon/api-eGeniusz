@@ -50,7 +50,7 @@ Route::middleware('auth:sanctum')->put('/term', [termController::class, 'update'
 Route::middleware('auth:sanctum')->delete('/term/{term}', [termController::class, 'destroy']);
 //termTeacher
 Route::middleware('auth:sanctum')->get('/teacherTerm/{user}', [termController::class, 'showTeacherTerms']);
-Route::middleware('auth:sanctum')->post('/teacherTerm', [termController::class, 'showDayTeacherTerms']);
+Route::middleware('auth:sanctum')->post('/dayTeacherTerm', [termController::class, 'showDayTeacherTerms']);
 
 
 //classes
