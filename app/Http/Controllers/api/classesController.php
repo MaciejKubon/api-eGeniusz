@@ -113,7 +113,7 @@ class classesController extends Controller
         try {
             return response()->json([
                 'message' => 'sucess',
-                'lesson' => $this->classesDetails($classes)
+                'terms' => $this->classesDetails($classes)
             ], 200);
         }catch(\Exception $e){
             return response()->json([
@@ -191,7 +191,7 @@ class classesController extends Controller
             ], 200);
         }catch(\Exception $e){
             return response()->json([
-                'message' => 'error',
+                'message' => 'Anulowanie lekcji powiodło się',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -202,13 +202,9 @@ class classesController extends Controller
 
         $validator = Validator::make($request->all(), [
             'date' => 'required|date_format:Y-m-d',
-            'student_id' => 'required|integer|exists:users,id'
         ],[
             'date.required' => 'Start date is required',
             'date.date_format' => 'Invalid date format',
-            'student_id.required' => 'Student id is required',
-            'student_id.integer' => 'Student id is invalid',
-            'student_id.exists' => 'Student id is invalid'
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -216,7 +212,7 @@ class classesController extends Controller
                 'error'  => $validator->errors(),
             ], 400);
         }
-        $student = user::find($request->get('student_id'));
+        $student = auth()->user();
         if($student->role != "student"){
             return response()->json([
                 'message' => 'error',
@@ -224,28 +220,19 @@ class classesController extends Controller
             ], 400);
         }
         $studentClasses = classes::join('terms','terms.id','=','classes.terms_id')
-            ->where('classes.student_id',$request->get('student_id'))
+            ->where('classes.student_id',$student->id)
             ->whereBetween('terms.start_date',[
                 $request->get('date').' 00:00:00',$request->get('date').' 23:59:59'
             ])->get();
         $classesArray = array();
         foreach($studentClasses as $class){
-            $classDetails = [
-                'id'=>$class->id,
-                'student'=>$this->userDetails($class->student_id),
-                'teacher'=>$this->userDetails($class->teacher_id),
-                'term'=>$class->id,
-                'start_date'=>$class->start_date,
-                'end_date'=>$class->end_date,
-                'lesson'=>$this->lessonDetails($class->lesson_id),
-                'confirmed'=>$class->confirmed,
-            ];
-            $classesArray[] = $classDetails;
+            $classDetails[] = $this->classesDetails($class);
+            $classesArray =$classDetails;
         }
         try{
             return response()->json([
                 'message' => 'sucess',
-                'classes' => $classesArray,
+                'terms' => $classesArray,
             ], 200);
         }
         catch(\Exception $e){
@@ -257,11 +244,20 @@ class classesController extends Controller
 
     }
     private function classesDetails(classes $class ){
-        return  ["id"=> $class->id,
+
+        $term = $this->termDetails($class->terms_id);
+        $classes = [
+            "id"=> $class->id,
             "student"=>$this->userDetails($class->student_id),
-            "term"=>$this->termDetails($class->terms_id),
             "lesson"=>$this->lessonDetails($class->lesson_id),
-            "condifrmed"=>$class->confirmed];
+            "confirmed"=>$class->confirmed
+        ];
+        return  [
+            "id"=>$term['id'],
+            "start_date"=>$term['start_date'],
+            "end_date"=>$term['end_date'],
+            "teacher"=>$term['teacher'],
+            "class"=>$classes];
     }
 
     private function userDetails(int $user_id){

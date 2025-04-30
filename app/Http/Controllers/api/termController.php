@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Models\classes;
+use App\Models\lesson;
 use App\Models\term;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Ramsey\Uuid\Type\Integer;
 
 class termController extends Controller
 {
@@ -26,7 +29,7 @@ class termController extends Controller
         try {
             return response()->json([
                 'message' => 'sucess',
-                'term' => $termArray,
+                'terms' => $termArray,
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['
@@ -77,7 +80,7 @@ class termController extends Controller
         ]);
         if ($validator->fails()) {
             return response()->json([
-                'message' => 'error',
+                'message' => 'Nie udało się dodać nowego terminu',
                 'error' => $validator->errors(),
             ], 400);
         }
@@ -91,7 +94,7 @@ class termController extends Controller
                 (($term['start_date'] >= $start_date) && ($term['end_date'] <= $end_date)) ||
                 (($term['start_date'] <= $start_date) && ($term['end_date'] >= $end_date))) {
                 return response()->json([
-                    'message' => 'error',
+                    'message' => 'Data koliduje z innym terminem',
                     'error' => "Data koliduje z innym terminem"
                 ], 400);
             }
@@ -103,11 +106,11 @@ class termController extends Controller
                 'end_date' => $end_date
             ]);
             return response()->json([
-                'message' => 'sucess',
+                'message' => 'Nowy termin został dodany',
             ], 201);
         } catch (\Exception $e) {
             return response()->json(['
-                message' => 'error',
+                message' => 'Nie udało się dodać nowego terminu',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -121,7 +124,7 @@ class termController extends Controller
         try {
             return response()->json([
                 'message' => 'sucess',
-                'term' => $this->termDetails($term)
+                'terms' => $this->termDetails($term)
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
@@ -176,18 +179,18 @@ class termController extends Controller
     {
         if (!auth()->user()->can('delete_term'))
             abort(403);
-        $teacher = user::find(auth()->user());
+        $teacher = auth()->user();
         if ($teacher->role == "teacher" && $term->teacher_id != $teacher->id) {
             abort(403);
         }
         try {
             $term->delete();
             return response()->json([
-                'message' => 'sucess',
+                'message' => 'Termin został usnęty',
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['
-                message' => 'error',
+                message' => 'Nie udało się usunąć terminu',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -198,21 +201,17 @@ class termController extends Controller
 
         $validator = Validator::make($request->all(), [
             'date' => 'required|date_format:Y-m-d',
-            'teacher_id' => 'required|integer|exists:users,id'
         ], [
             'date.required' => 'Start date is required',
             'date.date_format' => 'Invalid date format',
-            'teacher_id.required' => 'Teacher id is required',
-            'teacher_id.integer' => 'Teacher id is invalid',
-            'teacher_id.exists' => 'Teacher id is invalid'
         ]);
         if ($validator->fails()) {
             return response()->json([
-                'message' => 'error',
+                'message' => 'Nie udało pobrać się terminów',
                 'error' => $validator->errors(),
             ], 400);
         }
-        $teacher = user::find($request->get('teacher_id'));
+        $teacher = auth()->user();
         if ($teacher->role != "teacher") {
             return response()->json([
                 'message' => 'error',
@@ -220,7 +219,7 @@ class termController extends Controller
             ], 400);
         }
 
-        $teacherTerms = term::where('teacher_id', $request->get('teacher_id'))
+        $teacherTerms = term::where('teacher_id', $teacher->id)
             ->whereBetween('start_date', [$request->get('date') . ' 00:00:00', $request->get('date') . ' 23:59:59'])
             ->get();
         $termArray = array();
@@ -246,13 +245,20 @@ class termController extends Controller
         $teacher = ['id' => $term->user->id,
             'firstName' => $term->user->firstName,
             'lastName' => $term->user->lastName];
+        if($term->classes!=null)
+        {
+            $class = $this->classDetails(classes::find($term->classes->id));
+        }
+        else{
+            $class = null;
+        }
         try {
             $terms = [
                 'id' => $term['id'],
                 'start_date' => $term['start_date'],
                 'end_date' => $term['end_date'],
                 'teacher' => $teacher,
-                'class' => $term->classes
+                'class' => $class
             ];
             return $terms;
         } catch (\Exception $e) {
@@ -261,6 +267,36 @@ class termController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function classDetails(classes $class){
+        $student = $class->user;
+        $student = [
+        'id'=>$student['id'],
+        'first_name'=>$student['firstName'],
+        'last_name'=>$student['lastName']
+        ];
+        $lesson = $this->lessonDetails(lesson::find($class->lesson->id));
+
+        return $class = [
+            'id'=>$class['id'],
+            'student'=>$student,
+            'lesson'=>$lesson,
+            'confirmed'=>$class['confirmed'],
+        ];
+    }
+    private function lessonDetails(lesson $lesson){
+        $lesson = $lesson->load('subject','subjectLevel','user');
+        $subject = ['id'=>$lesson->subject->id,
+            'name'=>$lesson->subject->name];
+        $subject_level = ['id'=>$lesson->subjectLevel->id,
+            'name'=>$lesson->subjectLevel->name];
+        return $lesson = [
+            'id' => $lesson['id'],
+            'subject' => $subject,
+            'subject_level' => $subject_level,
+            'price'=>$lesson->price,
+        ];
     }
 }
 

@@ -161,7 +161,7 @@ class lessonController extends Controller
             abort(403);
         $users = $request->user();
         $user = User::find($users->id);
-        if($user->role == 'teacher' && $lesson->user_id != $user->id){
+        if($user->role == 'teacher' && $lesson->teacher_id != $user->id){
             abort(403);
         }
         $validator = Validator::make($request->all(), [
@@ -194,7 +194,7 @@ class lessonController extends Controller
         try {
             $lesson->update($request->all());
             return response()->json([
-                'message' => 'sucess',
+                'message' => 'Przedmiot został zaktualizowany',
             ], 200);
         }
         catch(\Exception $e){
