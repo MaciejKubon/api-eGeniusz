@@ -65,4 +65,9 @@ Route::middleware('auth:sanctum')->post('/studentClasses', [classesController::c
 
 
 //userDetails
+Route::middleware('auth:sanctum')->get('/user', [userDetailsController::class, 'userDetails']);
 Route::middleware('auth:sanctum')->get('/userDetails/{user}', [userDetailsController::class, 'show']);
+Route::middleware('auth:sanctum')->post('/user', [userDetailsController::class, 'update']);
+Route::middleware('auth:sanctum')->post('/user/avatar', [userDetailsController::class, 'setUserAvatar']);
+Route::middleware('auth:sanctum')->get('/user/avatar', [userDetailsController::class, 'getUserAvatar']);
+Route::middleware('auth:sanctum')->delete('/user/avatar', [userDetailsController::class, 'deleteUserAvatar']);
