@@ -4,6 +4,7 @@ use App\Http\Controllers\api\Auth\AuthController;
 use App\Http\Controllers\api\Subject\subjectController;
 use App\Http\Controllers\api\Subject\subjectLevelController;
 use App\Http\Controllers\api\lessonController;
+use App\Http\Controllers\api\teacherListController;
 use App\Http\Controllers\api\termController;
 use App\Http\Controllers\api\classesController;
 use App\Http\Controllers\api\userDetailsController;
@@ -71,3 +72,7 @@ Route::middleware('auth:sanctum')->post('/user', [userDetailsController::class, 
 Route::middleware('auth:sanctum')->post('/user/avatar', [userDetailsController::class, 'setUserAvatar']);
 Route::middleware('auth:sanctum')->get('/user/avatar', [userDetailsController::class, 'getUserAvatar']);
 Route::middleware('auth:sanctum')->delete('/user/avatar', [userDetailsController::class, 'deleteUserAvatar']);
+
+
+//techarList
+Route::middleware('auth:sanctum')->post('/teacherList', [teacherListController::class, 'teacherList']);
