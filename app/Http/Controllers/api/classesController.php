@@ -194,7 +194,7 @@ class classesController extends Controller
 
         if($term->classes==null){
             return response()->json([
-                'message' => 'Bład aktualizacji zajęć',
+                'message' => 'Bład aktualizacji zajęć.',
                 'error' => 'Incorrect class id'
             ], 400);
         }
