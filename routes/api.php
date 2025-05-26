@@ -4,6 +4,7 @@ use App\Http\Controllers\api\Auth\AuthController;
 use App\Http\Controllers\api\Subject\subjectController;
 use App\Http\Controllers\api\Subject\subjectLevelController;
 use App\Http\Controllers\api\lessonController;
+use App\Http\Controllers\api\teacherDetails;
 use App\Http\Controllers\api\teacherListController;
 use App\Http\Controllers\api\termController;
 use App\Http\Controllers\api\classesController;
@@ -60,6 +61,7 @@ Route::middleware('auth:sanctum')->get('/classes/{classes}', [classesController:
 Route::middleware('auth:sanctum')->post('/classes', [classesController::class, 'store']);
 Route::middleware('auth:sanctum')->put('/classes/{classes}', [classesController::class, 'update']);
 Route::middleware('auth:sanctum')->delete('/classes/{classes}', [classesController::class, 'destroy']);
+Route::middleware('auth:sanctum')->post('/classes/confirm', [classesController::class, 'confirm']);
 //classesTeacher
 Route::middleware('auth:sanctum')->get('/teacherClasses/{user}', [classesController::class, 'showTeacherClasses']);
 Route::middleware('auth:sanctum')->post('/studentClasses', [classesController::class, 'showDayStudentClasses']);
@@ -76,3 +78,8 @@ Route::middleware('auth:sanctum')->delete('/user/avatar', [userDetailsController
 
 //techarList
 Route::middleware('auth:sanctum')->post('/teacherList', [teacherListController::class, 'teacherList']);
+
+
+//teacherDetails
+Route::middleware('auth:sanctum')->get('/teacher/{user}', [teacherDetails::class, 'show']);
+Route::middleware('auth:sanctum')->post('/teacher/calendar',[teacherDetails::class,'calendar']);

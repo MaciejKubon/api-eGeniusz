@@ -243,8 +243,8 @@ class termController extends Controller
     private function termDetails(term $term)
     {
         $teacher = ['id' => $term->user->id,
-            'firstName' => $term->user->firstName,
-            'lastName' => $term->user->lastName];
+            'firstName' => $term->user->first_name,
+            'lastName' => $term->user->last_name];
         if($term->classes!=null)
         {
             $class = $this->classDetails(classes::find($term->classes->id));
@@ -273,8 +273,8 @@ class termController extends Controller
         $student = $class->user;
         $student = [
         'id'=>$student['id'],
-        'first_name'=>$student['firstName'],
-        'last_name'=>$student['lastName']
+        'first_name'=>$student['first_name'],
+        'last_name'=>$student['last_name']
         ];
         $lesson = $this->lessonDetails(lesson::find($class->lesson->id));
 
