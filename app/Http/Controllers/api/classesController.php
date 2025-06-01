@@ -292,7 +292,7 @@ class classesController extends Controller
         }
         catch(\Exception $e){
             return response()->json(['
-                message' => 'error',
+                message' => 'Błąd',
                 'error' => $e->getMessage()
             ], 500);
         }
