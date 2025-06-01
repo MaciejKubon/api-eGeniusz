@@ -136,7 +136,7 @@ class teacherListController extends Controller
         }
         catch(\Exception $e){
             return response()->json(['
-                message' => 'error',
+                message' => 'Błąd pobierania danych',
                 'error' => $e->getMessage()
             ], 500);
         }

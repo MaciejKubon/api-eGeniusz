@@ -101,6 +101,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('update_classes', function(User $user) {
             return $user->role == "student";
         });
+        Gate::define('confirm_classes', function(User $user) {
+            return $user->role == "teacher";
+        });
         Gate::define('delete_classes', function(User $user) {
             return $user->role == "admin" | $user->role == "teacher" | $user->role == "student";
         });

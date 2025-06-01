@@ -56,14 +56,14 @@ class classesController extends Controller
         ],[
             'terms_id.required' => 'Term is required',
             'terms_id.exists' => 'Term is not exists',
-            'lesson_id.required' => 'Lesson is required',
-            'lesson_id.exists' => 'Lesson is not exists',
+            'lesson_id.required' => 'Przedmiot jest wymagany',
+            'lesson_id.exists' => 'Wybrany przedmiot nie istniej',
             'confirmed.required' => 'Confirmed is required',
             'confirmed.boolean' => 'Confirmed is not valid'
         ]);
         if ($validator->fails()) {
             return response()->json([
-                'message' => 'error',
+                'message' => 'Błąd rezerwacji lekcji',
                 'error'  => $validator->errors(),
             ], 400);
         }
@@ -80,7 +80,7 @@ class classesController extends Controller
                 (($termStart<=$terms->start_date) && ($termEnd>=$terms->end_date))
             ){
                 return response()->json([
-                    'message' => 'error',
+                    'message' => 'Data zajęć koliduje z innymi zajęciami',
                     'error' => "Data zajęć koliduje z innymi zajęciami"
                 ], 400);
             }
@@ -93,11 +93,11 @@ class classesController extends Controller
                 "confirmed"=> 0
             ]);
             return response()->json([
-                'message' => 'sucess',
+                'message' => 'Lekcja  została zarezerwowana',
             ], 201);
         }catch(\Exception $e){
             return response()->json([
-                'message' => 'error',
+                'message' => 'Błąd rezerwacji lekcji',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -161,6 +161,61 @@ class classesController extends Controller
         }
 
     }
+    public function confirm(Request $request)
+    {
+        if (!auth()->user()->can('confirm_classes')){
+            abort(403);
+        }
+        $validator = Validator::make($request->all(), [
+            'confirmed' => 'required|boolean',
+            'terms_id' => 'required|exists:terms,id',
+        ],[
+            'confirmed.required' => 'confirmed is required',
+            'confirmed.boolean' => 'Confirmed is not valid',
+            'terms_id.required' => 'Term is required',
+            'terms_id.exists' => 'Term is not exists',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Nie udało się potwierdzić lekcji',
+                'error'  => $validator->errors(),
+            ], 400);
+        }
+        $term = term::find($request->terms_id);
+        $teacher = auth()->user();
+
+        if($term->teacher_id!=$teacher->id){
+            return response()->json([
+                'message' => 'Bład aktualizacji zajęć',
+                'error' => 'Incorrect user'
+            ], 400);
+        }
+        $term = $term->load('classes');
+
+        if($term->classes==null){
+            return response()->json([
+                'message' => 'Bład aktualizacji zajęć',
+                'error' => 'Incorrect class id'
+            ], 400);
+        }
+        $classes = classes::find($term->classes->id);
+
+        try {
+            $classes->update([
+                "confirmed"=> $request->confirmed
+            ]);
+            return response()->json([
+                'message' => 'Zajęcia zostały potwiedzone',
+            ], 201);
+        }catch(\Exception $e){
+            return response()->json([
+                'message' => 'Błąd aktualizacji zajęć',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
+
+    }
 
     /**
      * Remove the specified resource from storage.
@@ -180,14 +235,14 @@ class classesController extends Controller
         }
         if($classes->condirmded == 1){
             return response()->json([
-                'message' => 'error',
+                'message' => 'Nie można odwołać potwierdzonej lekcji',
                 'error' => 'Nie można odwołać potwierdzonej lekcji'
             ], 400);
         }
         try {
             $classes->delete();
             return response()->json([
-                'message' => 'sucess',
+                'message' => 'Lekcja została anulowana',
             ], 200);
         }catch(\Exception $e){
             return response()->json([
@@ -237,7 +292,7 @@ class classesController extends Controller
         }
         catch(\Exception $e){
             return response()->json(['
-                message' => 'error',
+                message' => 'Błąd',
                 'error' => $e->getMessage()
             ], 500);
         }
