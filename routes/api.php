@@ -8,13 +8,14 @@ use App\Http\Controllers\api\teacherDetails;
 use App\Http\Controllers\api\teacherListController;
 use App\Http\Controllers\api\termController;
 use App\Http\Controllers\api\classesController;
+use App\Http\Controllers\api\userController;
 use App\Http\Controllers\api\userDetailsController;
 use Illuminate\Support\Facades\Route;
 
 
 //auth
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->name('login');;
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 Route::middleware('auth:sanctum')->post('/auth', [AuthController::class, 'authenticate']);
 
@@ -83,3 +84,7 @@ Route::middleware('auth:sanctum')->post('/teacherList', [teacherListController::
 //teacherDetails
 Route::middleware('auth:sanctum')->get('/teacher/{user}', [teacherDetails::class, 'show']);
 Route::middleware('auth:sanctum')->post('/teacher/calendar',[teacherDetails::class,'calendar']);
+
+//Home
+Route::middleware('auth:sanctum')->get('/teacherHome',[userController::class,'teacherHomeTerms']);
+Route::middleware('auth:sanctum')->get('/studentHome',[userController::class,'studentHomeTerms']);

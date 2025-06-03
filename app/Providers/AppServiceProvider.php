@@ -114,5 +114,15 @@ class AppServiceProvider extends ServiceProvider
         });
 
 
+
+        Gate::define('show_teacher_home_terms', function(User $user) {
+            return $user->role == "teacher";
+        });
+        Gate::define('show_student_home_classes', function(User $user) {
+            return $user->role == "student";
+        });
+
+
+
     }
 }
