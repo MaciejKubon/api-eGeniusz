@@ -36,8 +36,9 @@ class userController extends Controller
                 'classes.confirmed',
                 'student.first_name',
                 'student.last_name',
-                'subjects.name',
-                'subject_levels.name',
+                'subjects.name as subject_name',
+                'subject_levels.name as subject_level_name',
+                'lessons.price as lesson_price',
             )
             ->get();
         $termArray = array();
@@ -67,8 +68,8 @@ class userController extends Controller
                 'term' => $termsA
             ]);
         } catch (\Exception $e) {
-            return response()->json(['
-                message' => 'error',
+            return response()->json([
+                'message' => 'Błąd pobieraia danych',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -97,8 +98,8 @@ class userController extends Controller
                 'classes.confirmed',
                 'teacher.first_name',
                 'teacher.last_name',
-                'subjects.name',
-                'subject_levels.name',
+                'subjects.name as subject_name',
+                'subject_levels.name as subject_level_name',
             )
             ->get();
         $termArray = array();
@@ -124,7 +125,7 @@ class userController extends Controller
         ];
         try {
             return response()->json([
-                'message' => 'sucess',
+                'message' => 'Błąd pobieraia danych',
                 'term' => $termsA
             ]);
         } catch (\Exception $e) {
